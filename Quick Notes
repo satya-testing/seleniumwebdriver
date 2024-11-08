@@ -1,0 +1,303 @@
+ 1.Headless browser testing--->
+ 
+  ChromeOptions options = new ChromeOptions();
+  options.addArguments("--headless=new");
+  //pass options to chromedriver
+  		WebDriver driver = new ChromeDriver(options);
+  
+  Advantages > 1.we can do multiple simultaneous tasks
+				2.faster execution		
+ ----------------------------------------------------
+  2.disable notifications on website--->
+  
+   ChromeOptions options = new ChromeOptions();
+	options.addArguments("--disable-notifications");
+	//pass options to chromedriver	
+		WebDriver driver = new ChromeDriver(options);
+
+ --------------------------------------------------------------
+ 3.handle SSL certificates 
+ 
+ ChromeOptions options = new ChromeOptions();
+ options.setAcceptInsecureCerts(true) //accepts SSL certificates
+
+WebDriver driver = new ChromeDriver(options);
+
+ -------------------------------------------------------------
+ 4.how to remove "chrome is being controlled by automated test software--->
+ 
+ ChromeOptions options = new ChromeOptions();
+ options.setExperimentalOption("excludeSwitches", new String[] {"enable-automateion"});
+ 
+ WebDriver driver = new ChromeDriver(options);
+ 
+ --------------------------------------------------------------
+ 5. Run test in incognito mode--->
+ 	
+ 	ChromeOptions options = new ChromeOptions();
+ 	options.addArguments("--incognito");
+ 	
+ 
+ ------------------------------------------------------------
+ 6. Enable chrome extension in  automation window---------->
+ 
+ 	ChromeOptions options = new ChromeOptions();
+ 	 File file = new File("metion path of the .crx file"); 
+ 	 options.addExtensions(file);
+ 	 WebDriver driver = new ChromeDriver(options);
+ 	 
+ 	 //how to download CRX file
+ 	 1.go to extensions page in chrome
+ 	 2.Rt click on the extension
+ 	 3.Download CRX for this extension
+ ---------------------------------------------------------- 
+ 7. Enable Ad-blocker to the browser under test--->
+ 
+ 	ChromeOptions options = new ChromeOptions();
+ 	 File file = new File("metion path of the .crx file"); 
+ 	 options.addExtensions(file);
+ 	 WebDriver driver = new ChromeDriver(options);
+ 	 
+------------------------------------------------------------
+ 8.Timestamp format and use to save for filenames---->
+ 
+ 	String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+ 	
+ 		File targetfile = new File(System.getProperty("user.dir")+"//Screenshots//selectedarea_"+ timestamp +".png");
+ 
+ -------------------------------------------------------------------------
+ 9.Broken links finding ---->
+ for( WebElement link :links)
+		{
+			String href = link.getAttribute("href");
+			try {
+			if(href!=null && !href.isEmpty())
+			{
+				URL urls = new URL(href);
+				HttpURLConnection connection =(HttpURLConnection) urls.openConnection();
+				connection.setRequestMethod("GET");
+				connection.setConnectTimeout(5000);
+				connection.connect();
+				
+				int responseCode=connection.getResponseCode();
+				if(responseCode>=200 && responseCode<300)
+				{
+					System.out.println("URL:"+ href +" --->response code is :"+responseCode);
+					validLinks ++;
+				}
+				else if(responseCode>=300 && responseCode<400){
+					System.out.println("URL:"+ href +" --->response code is :"+responseCode);
+					redirectionLinks ++;
+				}
+				else if(responseCode>=400 ) {
+					System.out.println("URL:"+ href +" --->response code is :"+responseCode);
+					brokenLinks ++;
+				}						
+			}
+		}
+			catch(Exception e)
+			{
+				System.out.println("URL:"+ href +"failed to connect to the url");
+				failedLinks ++;
+			}
+	}	
+	
+--------------------------------------------------------------------------------------
+ 10. TakeScreenshot----->
+ 
+ 	//fullpage screenshot
+		//wait until logo is visible	
+		WebDriverWait wait =  new WebDriverWait(driver ,Duration.ofSeconds(10));		
+				wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.xpath("//img[@alt='company-branding']"))));
+				
+				
+		String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		
+	/*	TakesScreenshot ts = (TakesScreenshot) driver;
+		File 	sourcefile =ts.getScreenshotAs(OutputType.FILE);
+		File targetfile = new File(System.getProperty("user.dir")+"//Screenshots//fullpage_"+ timestamp +".png");
+		sourcefile.renameTo(targetfile);
+	
+		System.out.println("Full page screenshot taken successfully");
+	*/	
+		//only selected area
+		WebElement loginsection =driver.findElement(By.xpath("//div[@class='orangehrm-login-slot']"));
+		File sourcefile =loginsection.getScreenshotAs(OutputType.FILE);
+		File targetfile = new File(System.getProperty("user.dir")+"//Screenshots//selectedarea_"+ timestamp +".png");
+		sourcefile.renameTo(targetfile);
+		
+		//similarly we can take screenshot for particular webelement like logos, titles....
+ 
+ ---------------------------------------------------------------------------------------------
+ 11. JavascriptExecutor
+ 
+  	JavascriptExecutor  - interface
+  	executeScript   --using this we can execute statements
+  	              //use when 'ElementInterceptedException' while user driver. click() / sendKeys()
+  	action methods like
+  	click()
+  	sendKeys()
+  	
+  	
+  	>>for interface's we cannot create object instead for that we do typecasting
+  	JavascriptExecutor js = (JavascriptExecutor) driver	;   //here driver is a WebDriver variable so typecasting is required
+  	
+  	>>But when driver variable is pointing to ChromeDriver interface at that time type casting is not required
+  	ex. ChromeDriver driver = new ChromeDriver(); 	
+  		JavascriptExecutor js = driver ;
+  		
+  	//using JS for sending txt to the txtbox instead for sendKeys("satya")
+  		WebElement txtbox_Name=driver.findElement(By.xpath("//input[@id='name']"));			
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		js.executeScript("arguments[0].setAttribute('value','satya')", txtbox_Name);
+		
+	//click action using Js
+		WebElement btn_gender =driver.findElement(By.xpath("//input[@id='male']"));
+		js.executeScript("arguments[0].click()", btn_gender);	
+
+------------------------------------------------------------------------------------------------------		
+ 12.Scrolling the web page using JavascriptExecutor---->
+ 	1.scroll down the page based on pixel number
+ 		js.executeScript("window.scrollBy(0,1500)", "");
+		System.out.println(js.executeScript("return window.pageYOffset")); //1500
+		
+ 	2.scroll down the page till find the element is reach
+ 		WebElement ele = driver.findElement(By.xpath("//input[@id='comboBox']"));		
+		js.executeScript("arguments[0].scrollIntoView()", ele);
+		System.out.println(js.executeScript("return window.pageYOffset")); //2288.666748046875	
+		
+ 	3.scroll down the page till end of the page
+ 		js.executeScript("window.scrollBy(0,document.body.scrollHeight)");
+		Thread.sleep(5000);
+		
+	4. scroll back to top of the page
+		js.executeScript("window.scrollBy(0,-document.body.scrollHeight)");
+		
+ ----For horizantal scrolling------------->
+	
+		window.scrollby(1000,0);
+		"retuen window.pageXOffset"
+		(0,document.body.scrollWidth)
+ ------------------------------------------------------------------------------------------
+ 13. Zoomin and ZoomOut using JS
+ 	
+ 	JavascriptExecutor js = (JavascriptExecutor) driver;	
+		js.executeScript("document.body.style.zoom='50%'");  //zoom 50%	
+
+ --------------------------------------------------------------------------------------------
+ 14. //upload single file
+		String file1 = "C:\\Users\\Satyanarayana.patil\\eclipse-workspace\\MyPrepration\\seleniumwebdriver\\Screenshots\\fullpage.png" ;
+		
+		driver.findElement(By.xpath("//input[@name='filesToUpload']")).sendKeys(file1);
+		
+	//upload  more then 2 files
+	/*	
+		String file1 =" file1 path need to mention here";
+		String file2 ="file2 path need to mention here";
+		
+		driver.findElement(By.xpath("//input[@name='filesToUpload']")).sendKeys(file1+"\n"+file2);
+-------------------------------------------------------------------------------------------------
+		
+//sendkeys
+JavascriptExecutor js = (JavascriptExecutor) driver;
+js.executescript("arguments[0].setAttribute('valie','username')" , ele);
+//click action
+js.executescript("arguments[0].click()", login_btn);
+
+//scrolling some pixel
+js.executeScript("window.scrollBy(0,1500)", "");
+syso(js.executeScript("return window.pageYOffset")));
+
+//scroll till find element
+js.executeScript("arguments[0].scrollIntoView()"  , ele);
+
+//scroll end of the page
+js.executeScript("window.scrollBy(0, document.body.scrollHeight)");
+
+//scroll top of the page
+js.executeScript("window.scrollBy(0,-document.body.scrollHeight)");
+
+//zoom
+js.executeScript("document.body.style.zoom='50%'");
+
+-------------------------------------------------------------------------------------------------
+ 15. Actions class
+ 	Actions action = new Actions(driver);
+ 	
+<imp>------->>>	Actions vs Action
+ 		Actions -- class, will be used to perform mouse actions
+ 		Action  -- interface, used to store created actions.
+ 		
+<imp>------->>>	build() and perform()
+				build() -- method creating/building an action and storing into a variable of Action interface
+				perform() -- performing/completing action
+				
+			ex: Actions action = new Actions(driver);
+					Action myaction =action.contextClick(button).build();
+							myaction.perform();
+						 
+ 	
+ 	//mouse hover -> action.moveToElement(ele);
+ 		//method chaining if mouse hover to 2 elements
+		>>action.moveToElement(desktops).moveToElement(mac).click().perform();
+		
+ 	//right click
+ 		>>actoin.contextClick(ele).perform();
+ 		
+ 	//double click
+ 		>>action.doubleClick(ele).perform();;
+ 		
+ 					getText() vs getAttribute(attribute)
+ 					
+				<input id="xyz"> welcome </input>   
+					getText()--->returns the inner text (welcome)
+					getAttribute("id) ---> returns the value of attribute id (xyz)				
+				
+ 		
+ 	//drag and drop
+ 		>>action.dragAndDrop(source ele , torgat ele).perform();
+ 	
+ 	
+ 	Keyboard actions
+ 	
+ 	//enter the text in text area
+		driver.findElement(By.xpath("//textarea[@id='inputText1']")).sendKeys("Welcomen to the new world");
+		
+		Actions action = new Actions(driver);
+		
+	//Ctrl+A - to select all
+		action.keyDown(Keys.CONTROL).sendKeys("A").keyUp(Keys.CONTROL).perform();
+		
+	//Ctrl+c  -to copy the text
+		action.keyDown(Keys.CONTROL).sendKeys("C").keyUp(Keys.CONTROL).perform();
+
+	//press TAB key to jump to next text area
+		action.keyDown(Keys.TAB).keyUp(Keys.TAB).perform();
+		
+	//Ctrl+V  - to past the text
+		action.keyDown(Keys.CONTROL).sendKeys("v").keyUp(Keys.CONTROL).perform();
+------------------		
+	//Ctrl+Shift+A
+		action.keyDown(Keys.CONTROL).keyDown(Keys.SHIFT).sendKeys("A").keyUp(Keys.SHIFT).keyUp(Keys.CONTROL).perform();
+
+--------------------------------------------------------------------------------------
+ 16. swtiching the tabs in chrome usring getwindowHandles
+ 
+ 	Set<String> ids=driver.getWindowHandles();
+ 	now form Set we can't get the ids because no index specific for set interface
+ 	--convert to List and then get the ids
+ 	--1st convert to ArrayList and then List
+ 	
+ 	List<String> ids = new ArrayList(driver.getWindowHandles());
+ 	driver.switchTo().window(ids.get(1)); //switch to index 1 tab of chrome
+ --------------------------------------------------------------------------------------
+ 17. Open url in new tab 
+ 	
+ 	driver.switchTO().newWindow(WindowType.TAB);
+ 	
+ 	
+ 	//Open url in new Window
+ 	 	driver.switchTO().newWindow(WindowType.WINDOW);
+ 	
+ 	
+ 	
